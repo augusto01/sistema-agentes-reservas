@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema Multi-Agente | Panel de Reservas UNNE</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --accent: #38bdf8;
+            --accent-hover: #0ea5e9;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #334155;
+            --success: #22c55e;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem 1rem;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        header h1 {
+            font-size: 2rem;
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+        }
+
+        header p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .card h2 {
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-main);
+        }
+
+        /* Chat Panel */
+        .chat-box {
+            flex-grow: 1;
+            height: 300px;
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .message {
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            max-width: 85%;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+
+        .message.user {
+            background-color: var(--accent);
+            color: #0f172a;
+            align-self: flex-end;
+            font-weight: 500;
+        }
+
+        .message.agent {
+            background-color: var(--border);
+            color: var(--text-main);
+            align-self: flex-start;
+        }
+
+        .chat-input-area {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        input[type="text"] {
+            flex-grow: 1;
+            background: var(--bg-color);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 0.75rem;
+            color: var(--text-main);
+            outline: none;
+            font-size: 0.9rem;
+        }
+
+        input[type="text"]:focus {
+            border-color: var(--accent);
+        }
+
+        button {
+            background-color: var(--accent);
+            color: #0f172a;
+            border: none;
+            border-radius: 8px;
+            padding: 0 1.25rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        button:hover {
+            background-color: var(--accent-hover);
+        }
+
+        /* Turnos Panel */
+        .turnos-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            max-height: 360px;
+            overflow-y: auto;
+        }
+
+        .turno-item {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 0.85rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .turno-info h3 {
+            font-size: 0.95rem;
+            color: var(--text-main);
+            margin-bottom: 0.2rem;
+        }
+
+        .turno-info p {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .badge {
+            background: rgba(34, 197, 94, 0.15);
+            color: var(--success);
+            padding: 0.25rem 0.6rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            border: 1px solid rgba(34, 197, 94, 0.3);
+        }
+
+        .badge.ocupado {
+            background: rgba(239, 68, 68, 0.15);
+            color: #ef4444;
+            border-color: rgba(239, 68, 68, 0.3);
+        }
+
+        .refresh-btn {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            padding: 0.4rem 0.8rem;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            margin-top: 1rem;
+            align-self: flex-start;
+        }
+
+        .refresh-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>🤖 Sistema Multi-Agente de Reservas</h1>
+        <p>Orquestación Inteligente con LangGraph/Tool-Calling & FastAPI</p>
+    </header>
+
+    <div class="container">
+        <!-- Panel de Chat con los Agentes -->
+        <div class="card">
+            <h2>💬 Chat con Agentes</h2>
+            <div class="chat-box" id="chatBox">
+                <div class="message agent">¡Hola! Soy tu asistente virtual. ¿Qué turnos necesitás consultar o reservar hoy?</div>
+            </div>
+            <div class="chat-input-area">
+                <input type="text" id="userInput" placeholder="Escribí tu consulta..." autocomplete="off">
+                <button onclick="enviarMensaje()">Enviar</button>
+            </div>
+        </div>
+
+        <!-- Panel de Base de Datos en Vivo -->
+        <div class="card">
+            <h2>📅 Disponibilidad en Base de Datos</h2>
+            <div class="turnos-list" id="turnosList">
+                <p style="color: var(--text-muted); font-size: 0.9rem;">Cargando servicios...</p>
+            </div>
+            <button class="refresh-btn" onclick="cargarTurnos()">Actualizar Estado</button>
+        </div>
+    </div>
+
+    <script>
+        // Enviar mensaje al backend
+        async function enviarMensaje() {
+            const input = document.getElementById('userInput');
+            const chatBox = document.getElementById('chatBox');
+            const texto = input.value.trim();
+            
+            if (!texto) return;
+
+            // Mostrar mensaje del usuario
+            chatBox.innerHTML += `<div class="message user">${texto}</div>`;
+            input.value = '';
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            // Mensaje temporal de carga
+            const loadingId = 'loading-' + Date.now();
+            chatBox.innerHTML += `<div class="message agent" id="${loadingId}">Procesando con agentes...</div>`;
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            try {
+                const response = await fetch('/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ mensaje: texto })
+                });
+                const data = await response.json();
+                
+                // Reemplazar mensaje de carga con la respuesta real
+                document.getElementById(loadingId).innerText = data.respuesta;
+                cargarTurnos(); // Actualizar grilla de turnos por si hubo reservas
+            } catch (error) {
+                document.getElementById(loadingId).innerText = "Error de conexión con el servidor.";
+            }
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        // Permitir enviar con Enter
+        document.getElementById('userInput').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') enviarMensaje();
+        });
+
+        // Cargar turnos de SQLite
+        async function cargarTurnos() {
+            try {
+                const response = await fetch('/turnos');
+                const turnos = await response.json();
+                const container = document.getElementById('turnosList');
+                container.innerHTML = '';
+
+                turnos.forEach(t => {
+                    const badgeClass = t.disponible ? 'badge' : 'badge ocupado';
+                    const badgeText = t.disponible ? 'Disponible' : 'Reservado';
+                    container.innerHTML += `
+                        <div class="turno-item">
+                            <div class="turno-info">
+                                <h3>ID #${t.id} - ${t.nombre}</h3>
+                                <p>📅 ${t.fecha} &nbsp;|&nbsp; ⏰ ${t.hora}</p>
+                            </div>
+                            <span class="${badgeClass}">${badgeText}</span>
+                        </div>
+                    `;
+                });
+            } catch (error) {
+                console.error("Error al cargar turnos", error);
+            }
+        }
+
+        // Cargar al iniciar
+        cargarTurnos();
+    </script>
+</body>
+</html>
